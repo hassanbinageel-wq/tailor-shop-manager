@@ -5,7 +5,6 @@ import '../providers/dashboard_provider.dart';
 import '../providers/expense_provider.dart';
 import '../providers/person_provider.dart';
 import '../providers/settings_provider.dart';
-import '../services/notification_service.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'expenses/expenses_screen.dart';
 import 'lock/lock_screen.dart';
@@ -46,15 +45,11 @@ class _HomeShellState extends State<HomeShell> {
   }
 
   Future<void> _checkReminders() async {
-    final notifier = NotificationService.instance;
-    await notifier.init();
-    await notifier.checkSalaryReminder();
-    await notifier.checkBackupReminder();
-
     if (!mounted) return;
     final dash = context.read<DashboardProvider>();
     final settings = context.read<SettingsProvider>();
-    await notifier.checkExpenseAlert(dash.monthExpenses, settings.currency);
+    dash.currency = settings.currency;
+    await dash.load();
   }
 
   Future<void> goTo(int index) async {

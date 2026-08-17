@@ -8,6 +8,7 @@ import '../repositories/person_repository.dart';
 import '../repositories/stats_repository.dart';
 import '../repositories/txn_repository.dart';
 import '../repositories/work_repository.dart';
+import '../services/reminder_service.dart';
 
 /// مزوّد لوحة التحكم والإحصائيات
 class DashboardProvider extends ChangeNotifier {
@@ -16,6 +17,7 @@ class DashboardProvider extends ChangeNotifier {
   final TxnRepository _txns = TxnRepository();
   final ExpenseRepository _expenses = ExpenseRepository();
   final StatsRepository _stats = StatsRepository();
+  final ReminderService _reminders = ReminderService();
 
   DashboardSummary summary = const DashboardSummary();
   List<RecentOperation> recent = [];
@@ -25,6 +27,10 @@ class DashboardProvider extends ChangeNotifier {
   List<ChartPoint> topProducers = [];
   List<({DateTime month, double wages, double expenses})> monthly = [];
   double monthExpenses = 0;
+  List<AppReminder> reminders = [];
+
+  /// رمز العملة الحالي (يضبطه SettingsProvider)
+  String currency = 'ر.ي';
 
   PeriodType periodType = PeriodType.all;
   DateTime? customStart;
@@ -81,6 +87,10 @@ class DashboardProvider extends ChangeNotifier {
     topProducers = await _work.topProducers(range: r);
     monthly = await _stats.monthlyComparison(Periods.lastMonths(6));
     monthExpenses = await _expenses.total(range: thisMonth);
+    reminders = await _reminders.pending(
+      monthExpenses: monthExpenses,
+      currency: currency,
+    );
 
     busy = false;
     notifyListeners();
@@ -88,4 +98,10 @@ class DashboardProvider extends ChangeNotifier {
 
   /// إجمالي الأرباح التقديري = الأجور المحصّلة ناقص المصروفات
   double get profit => summary.totalWages - summary.totalExpenses;
+
+  /// إخفاء تنبيه بعد قراءته
+  void dismissReminder(ReminderKind kind) {
+    reminders = reminders.where((r) => r.kind != kind).toList();
+    notifyListeners();
+  }
 }

@@ -35,9 +35,6 @@ dependencies:
   file_picker: ^8.1.2
   image_picker: ^1.1.2
 
-  # الإشعارات المحلية
-  flutter_local_notifications: '>=17.2.3 <20.0.0'
-
   # تجزئة كلمة المرور
   crypto: ^3.0.5
 

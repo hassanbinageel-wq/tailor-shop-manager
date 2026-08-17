@@ -100,7 +100,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           Padding(
             padding: const EdgeInsets.all(22),
             child: Text(
-              'يتم فحص التذكيرات تلقائياً عند فتح التطبيق. لا يحتاج التطبيق إلى اتصال بالإنترنت لإرسالها.',
+              'تُفحص التذكيرات عند فتح التطبيق وتظهر كبطاقات في أعلى لوحة التحكم. لا يحتاج التطبيق إلى إنترنت ولا إلى أذونات إشعارات.',
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 12.5,

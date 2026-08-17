@@ -6,6 +6,7 @@ import '../../core/utils/formatters.dart';
 import '../../models/summaries.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/settings_provider.dart';
+import '../../services/reminder_service.dart';
 import '../../widgets/charts.dart';
 import '../../widgets/common.dart';
 import '../search/global_search_screen.dart';
@@ -76,6 +77,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: EdgeInsets.all(6),
                 child: LinearProgressIndicator(minHeight: 2),
               ),
+
+            // ----- التنبيهات والتذكيرات -----
+            ...dash.reminders.map((r) => _ReminderBanner(
+                  reminder: r,
+                  onDismiss: () => dash.dismissReminder(r.kind),
+                )),
 
             // ----- بطاقات الفريق -----
             const SectionHeader(title: 'فريق العمل', icon: Icons.groups_rounded),
@@ -274,6 +281,54 @@ class _RecentTile extends StatelessWidget {
       trailing: Text(
         Fmt.money(op.amount, currency),
         style: TextStyle(fontWeight: FontWeight.w800, color: color, fontSize: 13.5),
+      ),
+    );
+  }
+}
+
+class _ReminderBanner extends StatelessWidget {
+  final AppReminder reminder;
+  final VoidCallback onDismiss;
+
+  const _ReminderBanner({required this.reminder, required this.onDismiss});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+      decoration: BoxDecoration(
+        color: reminder.color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: reminder.color.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(reminder.icon, color: reminder.color, size: 22),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(reminder.title,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: reminder.color)),
+                const SizedBox(height: 3),
+                Text(reminder.message,
+                    style: const TextStyle(fontSize: 12.5, height: 1.5)),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'إخفاء',
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.close_rounded, size: 18),
+            onPressed: onDismiss,
+          ),
+        ],
       ),
     );
   }
