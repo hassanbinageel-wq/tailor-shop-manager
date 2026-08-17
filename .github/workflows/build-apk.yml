@@ -1,19 +1,80 @@
-.dart_tool/
-.packages
-build/
-.flutter-plugins
-.flutter-plugins-dependencies
-pubspec.lock
-.idea/
-.vscode/
-*.iml
-android/
-ios/
-web/
-windows/
-linux/
-macos/
-.DS_Store
-*.log
-*.apk
-*.aab
+name: بناء APK
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Generate Android platform files
+        run: |
+          flutter create . \
+            --platforms=android \
+            --org com.hsnpmt \
+            --project-name tailor_shop_manager
+
+      - name: Patch Android config
+        run: python3 tool/patch_android.py
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+        continue-on-error: true
+
+      - name: Build release APK (universal)
+        run: flutter build apk --release
+
+      - name: Build split APKs per ABI
+        run: flutter build apk --release --split-per-abi
+
+      - name: Rename artifacts
+        run: |
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk \
+             dist/tailor-shop-manager-universal.apk
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            src="build/app/outputs/flutter-apk/app-$abi-release.apk"
+            [ -f "$src" ] && cp "$src" "dist/tailor-shop-manager-$abi.apk"
+          done
+          ls -lh dist
+
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: tailor-shop-manager-apk
+          path: dist/*.apk
+          retention-days: 90
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.apk
+          generate_release_notes: true
