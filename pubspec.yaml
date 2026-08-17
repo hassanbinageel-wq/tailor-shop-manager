@@ -1,94 +1,62 @@
-/// أدوات تنسيق الأرقام والتواريخ بالعربية.
-/// مكتوبة يدوياً بلا اعتماد على حزم خارجية لتفادي أي تعارض في الإصدارات.
-class Fmt {
-  static const List<String> arabicMonths = [
-    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-  ];
+name: tailor_shop_manager
+description: تطبيق احترافي لإدارة محل الخياطة الرجالية - خياطين، قصاصين، عاملين، مصروفات وتقارير.
+publish_to: 'none'
+version: 1.0.0+1
 
-  static const List<String> arabicDays = [
-    'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد',
-  ];
+environment:
+  sdk: '>=3.3.0 <4.0.0'
 
-  static String _group(String digits) {
-    final buf = StringBuffer();
-    final n = digits.length;
-    for (var i = 0; i < n; i++) {
-      if (i > 0 && (n - i) % 3 == 0) buf.write(',');
-      buf.write(digits[i]);
-    }
-    return buf.toString();
-  }
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
-  static String num2(double v) {
-    if (v.isNaN || v.isInfinite) return '0';
-    final negative = v < 0;
-    var s = v.abs().toStringAsFixed(2);
+  # إدارة الحالة
+  provider: ^6.1.2
 
-    if (s.endsWith('.00')) {
-      s = s.substring(0, s.length - 3);
-    } else if (s.endsWith('0')) {
-      s = s.substring(0, s.length - 1);
-    }
+  # قاعدة البيانات المحلية (يعمل بدون إنترنت)
+  sqflite: ^2.3.3+1
+  path: ^1.9.0
+  path_provider: ^2.1.4
 
-    final dot = s.indexOf('.');
-    final intPart = dot == -1 ? s : s.substring(0, dot);
-    final decPart = dot == -1 ? '' : s.substring(dot);
-    final out = '${_group(intPart)}$decPart';
-    return negative ? '-$out' : out;
-  }
+  # تقارير PDF والطباعة
+  pdf: ^3.11.1
+  printing: ^5.13.2
 
-  static String count(num v) {
-    final negative = v < 0;
-    final s = _group(v.abs().round().toString());
-    return negative ? '-$s' : s;
-  }
+  # تصدير Excel
+  excel: ^4.0.6
 
-  static String money(double v, String currency) => '${num2(v)} $currency';
+  # الرسوم البيانية
+  fl_chart: ^0.69.0
 
-  static String date(DateTime d) =>
-      '${d.year}/${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}';
+  # الملفات والمشاركة
+  share_plus: ^10.0.2
+  file_picker: ^8.1.2
+  image_picker: ^1.1.2
 
-  static String dateWithDay(DateTime d) =>
-      '${arabicDays[d.weekday - 1]} ${d.day} ${arabicMonths[d.month - 1]} ${d.year}';
+  # الإشعارات المحلية
+  flutter_local_notifications: '>=17.2.3 <20.0.0'
 
-  static String dateLong(DateTime d) =>
-      '${d.day} ${arabicMonths[d.month - 1]} ${d.year}';
+  # تجزئة كلمة المرور
+  crypto: ^3.0.5
 
-  static String dayName(DateTime d) => arabicDays[d.weekday - 1];
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
 
-  static String time(DateTime d) {
-    final period = d.hour < 12 ? 'ص' : 'م';
-    var h = d.hour % 12;
-    if (h == 0) h = 12;
-    return '$h:${d.minute.toString().padLeft(2, '0')} $period';
-  }
+flutter:
+  uses-material-design: true
 
-  static String dateTime(DateTime d) => '${date(d)} - ${time(d)}';
-
-  static String percent(double v) => '${num2(v)}%';
-
-  static String monthYear(DateTime d) => '${arabicMonths[d.month - 1]} ${d.year}';
-
-  static double parseNum(String? input) {
-    if (input == null) return 0;
-    const arabicDigits = '٠١٢٣٤٥٦٧٨٩';
-    const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
-    final buf = StringBuffer();
-
-    for (final ch in input.trim().split('')) {
-      final ai = arabicDigits.indexOf(ch);
-      final pi = persianDigits.indexOf(ch);
-      if (ai >= 0) {
-        buf.write(ai.toString());
-      } else if (pi >= 0) {
-        buf.write(pi.toString());
-      } else if (RegExp(r'[0-9.\-]').hasMatch(ch)) {
-        buf.write(ch);
-      } else if (ch == '٫') {
-        buf.write('.');
-      }
-    }
-    return double.tryParse(buf.toString()) ?? 0;
-  }
-}
+  fonts:
+    - family: Tajawal
+      fonts:
+        - asset: assets/fonts/Tajawal-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Tajawal-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Tajawal-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Tajawal-ExtraBold.ttf
+          weight: 800
